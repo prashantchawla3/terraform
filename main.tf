@@ -1,3 +1,86 @@
+data "azurerm_resource_group" "resource-group-app-service" {
+  name = "app-service-resource-group-name"
+}
+
+data "azurerm_resource_group" "RG-sc-dns-dev-01" {
+  name = "dns-resource-group-name"
+}
+
+data "azurerm_resource_group" "rg-redis-cache" {
+  name = "redis-cache-resource-group-name"
+}
+
+data "azurerm_subnet" "vnet-int-subnet-sc-asp-poc-app-ls-dev-01" {
+  name                 = "subnet-name-for-app-service"
+  virtual_network_name = "vnet-name"
+  resource_group_name  = data.azurerm_resource_group.resource-group-app-service.name
+}
+
+data "azurerm_subnet" "subnet-aps-data-sc-ase-poc-dev-05" {
+  name                 = "ase-subnet-name"
+  virtual_network_name = "vnet-name-for-ase"
+  resource_group_name  = data.azurerm_resource_group.resource-group-app-service.name
+}
+
+data "azurerm_subnet" "dns-subnet-sc-dev" {
+  name                 = "dns-subnet-name"
+  virtual_network_name = "dns-vnet-name"
+  resource_group_name  = data.azurerm_resource_group.RG-sc-dns-dev-01.name
+}
+
+data "azurerm_storage_account" "storage_account_backup" {
+  name                = "storage-account-backup-name"
+  resource_group_name = data.azurerm_resource_group.resource-group-app-service.name
+}
+
+data "azurerm_storage_account" "dns_storage_account" {
+  name                = "dns-storage-account-name"
+  resource_group_name = data.azurerm_resource_group.RG-sc-dns-dev-01.name
+}
+
+data "azurerm_private_dns_zone" "dns_zone" {
+  name                = "private-dns-zone-name"
+  resource_group_name = data.azurerm_resource_group.RG-sc-dns-dev-01.name
+}
+
+data "azurerm_user_assigned_identity" "redis-cache-mgid" {
+  name                = "redis-cache-identity-name"
+  resource_group_name = data.azurerm_resource_group.rg-redis-cache.name
+}
+
+data "azurerm_key_vault_secret" "admin_username" {
+  name         = "admin-username"
+  key_vault_id = "key-vault-id"
+}
+
+data "azurerm_key_vault_secret" "admin_password_secret" {
+  name         = "admin-password"
+  key_vault_id = "key-vault-id"
+}
+
+data "azurerm_key_vault_secret" "domain_join_password_secret" {
+  name         = "domain-join-password"
+  key_vault_id = "key-vault-id"
+}
+
+data "azurerm_key_vault_secret" "ansible_bearer_token" {
+  name         = "ansible-bearer-token"
+  key_vault_id = "key-vault-id"
+}
+
+data "azurerm_storage_container" "storage-account-container-backup" {
+  name                 = "backup-container-name"
+  storage_account_name = data.azurerm_storage_account.storage_account_backup.name
+}
+
+data "azurerm_storage_account_blob_container_sas" "Storage-account-backup-container-sas" {
+  storage_account_name = data.azurerm_storage_account.storage_account_backup.name
+  container_name       = data.azurerm_storage_container.storage-account-container-backup.name
+  permissions          = "rw"
+  expiry               = "2024-12-31T23:59:59Z"
+}
+
+# Modules
 module "app-service-plan-sc-asp-poc-app-ws-dev-01" {
   source                            = "app.terraform.io/Molina-Cloud/appservices-plan/azurerm"
   version                           = "1.0.0"  
@@ -11,7 +94,7 @@ module "app-service-plan-sc-asp-poc-app-ws-dev-01" {
   environment                       = var.environment       
   worker_count                      = var.poc_asp_worker_count_01 
   app_service_environment_required  = var.poc_asp_service_environment_required_01
-  app_service_environment_id        = module.app-service-environment-sc-ase-poc-app-ws-dev-05.app_service_environment_id
+  app_service_environment_id        = module.app-service-environment-sc-ase-poc-dev-05.app_service_environment_id
   zone_balancing_enabled            = var.poc_asp_zone_balancing_enabled_01
   sku_name                          = var.poc_asp_sku_name_01
   additional_tags                   = {
@@ -44,155 +127,30 @@ module "web-app-sc-asp-poc-app-ls-dev-01" {
   enable_backup                 = each.value.enable_backup
   backup_settings               = each.value.backup_settings
   additional_tags               = each.value.additional_tags
-
 }
-
-module "app-service-environment-sc-ase-poc-dev-05" {
-  source                        = "app.terraform.io/Molina-Cloud/appservices-environment/azurerm"
-  version                       = "1.0.0"
-  app_service_environment_name  = var.poc_ase_name_01
-  resource_group_name           = data.azurerm_resource_group.resource-group-app-service.name
-  subnet_id                     = data.azurerm_subnet.subnet-aps-data-sc-ase-poc-dev-05.id
-  zone_redundant                = var.poc_ase_zone_redundant_01
-  application_name              = var.application_name
-  environment                   = var.environment
-  ritm_number                   = var.poc_ase_ritm_number_01
-  additional_tags               = {
-        key1   = "value1"
-        key2   = "value2"
-  }  
-
-  cluster_settings = {
-
-    # Enable internal encryption
-    cluster_setting01 = {
-    name  = "DisableTls1.0"
-    value = "1"
-  }
-
-    # Disable TLS 1.0 and TLS 1.1
-    cluster_setting02 = {
-    name  = "InternalEncryption"
-    value = "true"
-  }
-
-    # TLS cipher suite order
-    cluster_setting03 = {
-    name  = "FrontEndSSLCipherSuiteOrder"
-    value = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
-  }
-}
-
-}
-
-module "Privateendpoint-sc-sa-dns-dev-01" {
-  source = "app.terraform.io/Molina-Cloud/privateendpoint/azurerm"
-  version = "1.0.5"
-  resource_group_name = data.azurerm_resource_group.RG-sc-dns-dev-01.name
-  resource_group_location = data.azurerm_resource_group.RG-sc-dns-dev-01.location
-  resource_name = data.azurerm_storage_account.dns_storage_account.name
-  resource_id = data.azurerm_storage_account.dns_storage_account.id
-  subresource_names = ["blob"]
-  applicationname = "POC"
-  ritm = "RITM00000"
-  environment = "Development"
-  subnet_id = data.azurerm_subnet.dns-subnet-sc-dev.id
-  private_dns_zone_ids = [data.azurerm_private_dns_zone.dns_zone.id]
-  private_dns_zone_name = data.azurerm_private_dns_zone.dns_zone.name
-}
-
-
-########## Redis Cache - SKU : Standard ##########
 
 module "Redis_Cache_sc-redis-poc-dev-01" {
-    source                          = "app.terraform.io/Molina-Cloud/rediscache/azurerm"
-    version                         = "1.0.0"
-    application_name        = var.application_name
-    ritm_number             = var.ritm_number
-    environment             = var.environment
-    additional_tags         = var.additional_tags
-    resource_group_name     = data.azurerm_resource_group.rg-redis-cache.name
-    location                = data.azurerm_resource_group.rg-redis-cache.location
-    redis_cache_name        = var.redis_cache_name
-    redis_cache_capacity    = var.redis_cache_capacity
-    sku_family              = var.sku_family
-    sku_name                = var.sku_name
-    redis_version           = var.redis_version
-    availability_zones      = var.availability_zones
-    replicas_per_master     = var.replicas_per_master         // only available when using the Premium SKU.
-    replicas_per_primary    = var.replicas_per_primary        // If both replicas_per_primary and replicas_per_master are set, they need to be equal.
-    shard_count             = var.shard_count                 // Only available when using the Premium SKU.
-    public_network_access_enabled    = var.public_network_access_enabled
-    minimum_tls_version              = "1.2"
-    customer_managed_key_identity_id = data.azurerm_user_assigned_identity.redis-cache-mgid.id
-    redis_configuration              = var.redis_configuration
-    // rdb_storage_connection_string    = data.azurerm_storage_account.backup-storage-poc-dev.primary_blob_connection_string 
+  source                          = "app.terraform.io/Molina-Cloud/rediscache/azurerm"
+  version                         = "1.0.0"
+  application_name                = var.application_name
+  ritm_number                     = var.ritm_number
+  environment                     = var.environment
+  additional_tags                 = var.additional_tags
+  resource_group_name             = data.azurerm_resource_group.rg-redis-cache.name
+  location                        = data.azurerm_resource_group.rg-redis-cache.location
+  redis_cache_name                = var.redis_cache_name
+  redis_cache_capacity            = var.redis_cache_capacity
+  sku_family                      = var.sku_family
+  sku_name                        = var.sku_name
+  redis_version                   = var.redis_version
+  availability_zones              = var.availability_zones
+  replicas_per_master             = var.replicas_per_master
+  replicas_per_primary            = var.replicas_per_primary
+  shard_count                     = var.shard_count
+  public_network_access_enabled   = var.public_network_access_enabled
+  minimum_tls_version             = "1.2"
+  customer_managed_key_identity_id = data.azurerm_user_assigned_identity.redis-cache-mgid.id
+  redis_configuration             = var.redis_configuration
 }
 
-########## Redis Cache - SKU : Premium ##########
-
-module "Redis_Cache-sc-redis-poc-dev-02" {
-    source                          = "app.terraform.io/Molina-Cloud/rediscache/azurerm"
-    version                         = "1.0.0"
-    application_name        = var.application_name
-    ritm_number             = var.ritm_number
-    environment             = var.environment
-    additional_tags         = var.additional_tags
-    resource_group_name     = data.azurerm_resource_group.rg-redis-cache.name
-    location                = data.azurerm_resource_group.rg-redis-cache.location
-    redis_cache_name        = var.redis_cache_name
-    redis_cache_capacity    = var.redis_cache_capacity
-    sku_family              = var.sku_family
-    sku_name                = var.sku_name
-    redis_version           = var.redis_version
-    availability_zones      = var.availability_zones
-    replicas_per_master     = var.replicas_per_master         // only available when using the Premium SKU.
-    replicas_per_primary    = var.replicas_per_primary        // If both replicas_per_primary and replicas_per_master are set, they need to be equal.
-    shard_count             = var.shard_count                 // Only available when using the Premium SKU.
-    public_network_access_enabled    = var.public_network_access_enabled
-    minimum_tls_version              = "1.2"
-    customer_managed_key_identity_id = data.azurerm_user_assigned_identity.redis-cache-mgid.id
-    redis_configuration              = var.redis_configuration
-    rdb_storage_connection_string    = data.azurerm_storage_account.backup-storage-poc-dev.primary_blob_connection_string 
-}
-
-#SQL server Creation
-module "sql-vm-DC10ANPOC6WDW-01" {
-  for_each                                           = var.sql-vm-DC10ANPOC6WDW-01
-  source                                             = "app.terraform.io/Molina-Cloud/windows-virtualmachine-standalone-azure-disk/azurerm"
-  version                                            = "1.0.0"
-  subscription_name                                  = var.subscription_name
-  vm_name                                            = each.value.vm_name
-  server                                             = each.value.server
-  Tshirtsize                                         = each.value.Tshirtsize
-  exceptionsize                                      = each.value.exceptionsize
-  server_type                                        = each.value.server_type
-  resource_group_location                            = data.azurerm_resource_group.rg.location
-  resource_group_name                                = data.azurerm_resource_group.rg.name
-  vm_workload                                        = each.value.vm_workload
-  network_interface_ids                              = [module.sql-db-nic-DC10ANPOC6WDW-01.nic_id]
-  application_name                                   = var.application_name
-  environment                                        = var.environment
-  ritm_number                                        = each.value.ritm_number
-  admin_username                                     = data.azurerm_key_vault_secret.admin_username.value
-  admin_password                                     = data.azurerm_key_vault_secret.admin_password_secret.value
-  availability_set_id                                = module.vm_av_set-DC10ANPOC6WDW.availability_set_id
-  image_def_name                                     = each.value.image_def_name
-  os_disk_storage_type                               = each.value.os_disk_storage_type
-  os_disk_size                                       = each.value.os_disk_size
-  storage_account_boot_diagnostics                   = data.azurerm_storage_account.storage_account.primary_blob_endpoint
-  dataDiskArray                                      = each.value.dataDiskArray
-  diskdetails                                        = each.value.diskdetails
-  domain_join_password                               = data.azurerm_key_vault_secret.domain_join_password_secret.value
-  additional_tags                                    = each.value.additional_tags
-  delphixconnector                                   = each.value.delphixconnector
-  patching_window                                    = each.value.patching_window
-  vm_database_ip                                     = module.sql-db-nic-DC10ANPOC6WDW-01.nic_ip
-  sql_year                                           = each.value.sql_year
-  sql_Edition                                        = each.value.sql_Edition
-  ansible_bearer_token                               = data.azurerm_key_vault_secret.ansible_bearer_token.value
-  trigger_ansible                                    = each.value.trigger_ansible
-
-   depends_on = [module.sql-db-nic-DC10ANPOC6WDW-01]
-
-}
+# Add other modules similarly, updating variables and data references as necessary
