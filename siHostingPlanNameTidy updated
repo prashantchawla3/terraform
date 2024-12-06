@@ -1,0 +1,129 @@
+# Terraform Module Block
+resource "azurerm_app_service" "siHostingPlanNameTidy" {
+  name                    = "sc-app-siHostingPlanNameTidy-dev-01"
+  location                = azurerm_resource_group.example.location
+  resource_group_name     = azurerm_resource_group.example.name
+  app_service_plan_id     = azurerm_app_service_plan.example.id
+  client_affinity_enabled = false
+  client_certificate_enabled = false
+  client_certificate_mode = "Required"
+
+  site_config {
+    always_on               = true
+    default_documents       = ["index.html"]
+    ftps_state              = "FtpsOnly"
+    http2_enabled           = false
+    load_balancing_mode     = "LeastRequests"
+    managed_pipeline_mode   = "Integrated"
+    scm_use_main_ip_restriction = false
+    use_32_bit_worker       = false
+    vnet_route_all_enabled  = true
+    worker_count            = 1
+
+    application_stack {
+      php_version = ""  # Adjust if needed
+    }
+  }
+
+  app_settings = [
+    {
+      name  = "CURRENT_STACK"
+      value = "dotnetcore"
+    },
+    {
+      name  = "WEBSITE_RUN_FROM_PACKAGE"
+      value = "1"
+    },
+    {
+      name  = "WEBSITE_WEBDEPLOY_USE_SCM"
+      value = "false"
+    },
+    {
+      name  = "siHostingPlanNameTidy_App_Service_Name"
+      value = "siHostingPlanNameTidy"
+    }
+  ]
+
+  connection_string {
+    name  = "coreSqlDatabaseNameTidy"
+    type  = "Custom"
+    value = "123#abc"
+  }
+
+  connection_string {
+    name  = "POC02"
+    type  = "Custom"
+    value = "123#abc"
+  }
+
+  enable_backup = true
+  backup_settings {
+    enabled               = true
+    name                  = "sc-app-poc-dev-03-backup"
+    schedule {
+      frequency_interval    = 7
+      frequency_unit        = "Day"
+      retention_period_days = 30
+      keep_at_least_one_backup = false
+    }
+  }
+}
+
+# variables.tf
+variable "siHostingPlanNameTidy" {
+  description = "The name of the hosting plan for the App Service"
+  type        = string
+}
+
+variable "hostingPlanProperties" {
+  description = "Properties of the hosting plan"
+  type        = map(any)
+}
+
+variable "useAse" {
+  description = "Flag to check if the hosting plan uses ASE"
+  type        = bool
+}
+
+variable "phpVersion" {
+  description = "PHP version to be used in the application stack"
+  type        = string
+}
+
+variable "sqlServerFqdnTidy" {
+  description = "The Fully Qualified Domain Name (FQDN) of the SQL Server"
+  type        = string
+}
+
+variable "coreSqlDatabaseNameTidy" {
+  description = "The name of the core SQL database"
+  type        = string
+}
+
+variable "poC02ConnectionString" {
+  description = "The connection string for the POC02 database"
+  type        = string
+}
+
+variable "frequency_interval" {
+  description = "The backup frequency interval"
+  type        = number
+}
+
+variable "frequency_unit" {
+  description = "The frequency unit for backup"
+  type        = string
+}
+
+variable "retention_period_days" {
+  description = "The retention period for backups"
+  type        = number
+}
+
+variable "keep_at_least_one_backup" {
+  description = "Whether to keep at least one backup"
+  type        = bool
+}
+
+
+
