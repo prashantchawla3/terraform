@@ -16,6 +16,7 @@ variable "resource_group_name" {
     description = "Resource Group where the ASP will be deployed"
 }
 
+
 variable "poc_asp_name_01" {
     type        = string
     description = "Variable for App Service Plan Name"
