@@ -1,0 +1,246 @@
+# Terraform Module Block
+resource "azurerm_app_service" "xcSearchWebAppNameTidy" {
+  name                    = "sc-app-xcSearchWebAppNameTidy-dev-01"
+  location                = azurerm_resource_group.example.location
+  resource_group_name     = azurerm_resource_group.example.name
+  app_service_plan_id     = azurerm_app_service_plan.example.id
+  client_affinity_enabled = false
+  client_certificate_enabled = true
+  client_certificate_mode = "Required"
+
+  site_config {
+    always_on               = true
+    default_documents       = ["index.html"]
+    ftps_state              = "FtpsOnly"
+    http2_enabled           = false
+    load_balancing_mode     = "LeastRequests"
+    managed_pipeline_mode   = "Integrated"
+    scm_use_main_ip_restriction = false
+    use_32_bit_worker       = false
+    vnet_route_all_enabled  = true
+    worker_count            = 1
+
+    application_stack {
+      php_version = ""  # Adjust if needed
+    }
+  }
+
+  app_settings = [
+    {
+      name  = "CURRENT_STACK"
+      value = "dotnetcore"
+    },
+    {
+      name  = "WEBSITE_RUN_FROM_PACKAGE"
+      value = "1"
+    },
+    {
+      name  = "WEBSITE_WEBDEPLOY_USE_SCM"
+      value = "false"
+    },
+    {
+      name  = "IIS_Web_Application_Name"
+      value = "xcSearchWebAppNameTidy"
+    },
+    {
+      name  = "Database_Server_Name"
+      value = "sqlServerFqdnTidy"
+    },
+    {
+      name  = "Collection_Database_Server_Name"
+      value = "sqlServerFqdnTidy"
+    },
+    {
+      name  = "Collection_Shard_Map_Manager_Database_Name"
+      value = "shardMapManagerSqlDatabaseNameTidy"
+    },
+    {
+      name  = "Processing_Pools_Database_Name"
+      value = "poolsSqlDatabaseNameTidy"
+    },
+    {
+      name  = "Marketing_Automation_Database_Name"
+      value = "maSqlDatabaseNameTidy"
+    },
+    {
+      name  = "Reference_Data_Database_Name"
+      value = "refDataSqlDatabaseNameTidy"
+    },
+    {
+      name  = "Messaging_Connection_String"
+      value = "listkeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.ServiceBus/namespaces/authorizationRules', 'azureServiceBusNamespaceNameTidy', parameters('azureServiceBusAccessKeyName')), variables('azureServiceBusVersion')).primaryConnectionString"
+    },
+    {
+      name  = "Collection_Database_Application_User_Name"
+      value = "xcShardMapManagerSqlDatabaseUserName"
+    },
+    {
+      name  = "Collection_Database_Application_User_Password"
+      value = "xcShardMapManagerSqlDatabasePassword"
+    },
+    {
+      name  = "Processing_Pool_Database_Application_User_Name"
+      value = "poolsSqlDatabaseUserName"
+    },
+    {
+      name  = "Processing_Pool_Database_Application_User_Password"
+      value = "poolsSqlDatabasePassword"
+    },
+    {
+      name  = "Marketing_Automation_Database_Application_User_Name"
+      value = "xcMaSqlDatabaseUserName"
+    },
+    {
+      name  = "Marketing_Automation_Database_Application_User_Password"
+      value = "xcMaSqlDatabasePassword"
+    },
+    {
+      name  = "Reference_Data_Database_Application_User_Name"
+      value = "xcRefDataSqlDatabaseUserName"
+    },
+    {
+      name  = "Reference_Data_Database_Application_User_Password"
+      value = "xcRefDataSqlDatabasePassword"
+    },
+    {
+      name  = "XConnect_Server_Configuration_Environment"
+      value = "xcServerConfigurationEnvironment"
+    },
+    {
+      name  = "XConnect_Server_Certificate_Validation_Thumbprint"
+      value = "authCertificateThumbprint"
+    },
+    {
+      name  = "Allow_Invalid_Client_Certificates"
+      value = "allowInvalidClientCertificates"
+    },
+    {
+      name  = "XConnect_Server_Application_Insights_Key"
+      value = "if(parameters('useApplicationInsights'), reference(resourceId('Microsoft.Insights/Components', 'appInsightsNameTidy'), 'appInsightsApiVersion').InstrumentationKey, '')"
+    },
+    {
+      name  = "XP_Performance_Counters_Type"
+      value = "if(parameters('useApplicationInsights'), concat('Sitecore:XConnect:Diagnostics:PerformanceCounters:', parameters('xpPerformanceCountersType')), 'Sitecore:XConnect:Diagnostics:PerformanceCounters:Disable')"
+    },
+    {
+      name  = "XConnect_Server_Instance_Name"
+      value = "CollectionSearch"
+    },
+    {
+      name  = "License_Xml"
+      value = "licenseXml"
+    },
+    {
+      name  = "Search_SOLR_Core_Application_Connection_String"
+      value = "xcSolrConnectionString"
+    },
+    {
+      name  = "minTlsVersion"
+      value = "minTlsVersion"
+    },
+    {
+      name  = "WEBSITE_DYNAMIC_CACHE"
+      value = "0"
+    },
+    {
+      name  = "SITECORE_ENVIRONMENT_TYPE"
+      value = "environmentType"
+    }
+  ]
+
+  connection_string {
+    name  = "coreSqlDatabaseNameTidy"
+    type  = "Custom"
+    value = "123#abc"
+  }
+
+  connection_string {
+    name  = "POC02"
+    type  = "Custom"
+    value = "123#abc"
+  }
+
+  enable_backup = true
+  backup_settings {
+    enabled               = true
+    name                  = "sc-app-poc-dev-03-backup"
+    schedule {
+      frequency_interval    = 7
+      frequency_unit        = "Day"
+      retention_period_days = 30
+      keep_at_least_one_backup = false
+    }
+  }
+}
+
+
+# vavariable "xcBasicHostingPlanNameTidy" {
+  description = "The name of the hosting plan for the App Service"
+  type        = string
+}
+
+variable "xcSearchWebAppNameTidy" {
+  description = "The name of the Web App"
+  type        = string
+}
+
+variable "sqlServerFqdnTidy" {
+  description = "The Fully Qualified Domain Name (FQDN) of the SQL Server"
+  type        = string
+}
+
+variable "shardMapManagerSqlDatabaseNameTidy" {
+  description = "The name of the shard map manager database"
+  type        = string
+}
+
+variable "poolsSqlDatabaseNameTidy" {
+  description = "The name of the pools SQL database"
+  type        = string
+}
+
+variable "maSqlDatabaseNameTidy" {
+  description = "The name of the marketing automation database"
+  type        = string
+}
+
+variable "refDataSqlDatabaseNameTidy" {
+  description = "The name of the reference data database"
+  type        = string
+}
+
+variable "azureServiceBusNamespaceNameTidy" {
+  description = "The name of the Azure Service Bus namespace"
+  type        = string
+}
+
+variable "azureServiceBusAccessKeyName" {
+  description = "The access key name for Azure Service Bus"
+  type        = string
+}
+
+variable "appInsightsNameTidy" {
+  description = "The name of the Application Insights resource"
+  type        = string
+}
+
+variable "xcSolrConnectionString" {
+  description = "The connection string for the Solr core application"
+  type        = string
+}
+
+variable "minTlsVersion" {
+  description = "The minimum TLS version allowed for the Web App"
+  type        = string
+}
+
+variable "environmentType" {
+  description = "The environment type for the Sitecore application"
+  type        = string
+}
+
+variable "licenseXml" {
+  description = "The license XML for Sitecore"
+  type        = string
+}
+riables.tf
