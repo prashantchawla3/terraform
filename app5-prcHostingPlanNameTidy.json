@@ -1,0 +1,8 @@
+Dependencies
+"""[if(not(variables('useAse')), variables('hostingPlanProperties').prcProperties, variables('hostingPlanProperties').prcPropertiesWithASE)]"",
+""[resourceId('Microsoft.Web/serverfarms', variables('cdHostingPlanNameTidy'))]"""
+
+
+
+
+

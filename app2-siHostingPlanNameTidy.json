@@ -1,0 +1,7 @@
+
+Dependencies
+"[if(not(variables('useAse')), variables('hostingPlanProperties').siProperties, variables('hostingPlanProperties').siPropertiesWithASE)]",
+
+
+
+

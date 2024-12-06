@@ -1,0 +1,4 @@
+Dependencies
+"""password"": ""[parameters('authCertificatePassword')]"",
+""pfxBlob"": ""[parameters('authCertificateBlob')]"",
+""hostingEnvironmentProfile"": ""[if(variables('useAse'), variables('hostingPlanProperties').authCertificateHostingEnvironmentProfile, '')]"""
