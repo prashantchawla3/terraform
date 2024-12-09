@@ -1,0 +1,76 @@
+module "app_service" {
+  source = "azurerm_app_service"
+
+  app_service_name               = "sc-app-xcSearchWebAppNameTidy-dev-01"
+  resource_group_name            = var.resource_group_name
+  location                       = var.location
+  app_service_plan_id            = var.app_service_plan_id
+  client_cert_enabled            = true
+  client_affinity_enabled        = false
+  client_certificate_mode        = "Required"
+  public_network_access_enabled  = false
+  vnet_integration_required      = false
+  ritm_number                    = "RITM12345"
+  enable_backup                  = true
+
+  backup_settings = {
+    enabled                  = true
+    name                     = "sc-app-xcSearchWebAppNameTidy-dev-01-backup"
+    schedule = {
+      frequency_interval       = 7
+      frequency_unit           = "Day"
+      retention_period_days    = 30
+      keep_at_least_one_backup = false
+    }
+  }
+
+  site_config = {
+    always_on            = true
+    default_documents    = ["index.html"]
+    ftps_state           = "FtpsOnly"
+    http2_enabled        = false
+    load_balancing_mode  = "LeastRequests"
+    managed_pipeline_mode = "Integrated"
+    scm_use_main_ip_restriction = false
+    use_32_bit_worker    = false
+    vnet_route_all_enabled = true
+    worker_count         = 1
+    application_stack = {
+      php_version = ""
+    }
+  }
+
+  app_setting = [
+    { name = "CURRENT_STACK", value = "dotnetcore" },
+    { name = "WEBSITE_RUN_FROM_PACKAGE", value = "1" },
+    { name = "WEBSITE_WEBDEPLOY_USE_SCM", value = "false" },
+    { name = "WEBSITE_DYNAMIC_CACHE", value = "0" },
+    { name = "SITECORE_ENVIRONMENT_TYPE", value = var.environment_type },
+    { name = "minTlsVersion", value = var.min_tls_version },
+    { name = "XConnect Server Application Insights Key", value = var.app_insights_key },
+    { name = "XConnect Server Certificate Validation Thumbprint", value = var.auth_certificate_thumbprint }
+  ]
+
+  connection_string = {
+    connection_string01 = {
+      name  = "Messaging Connection String"
+      type  = "Custom"
+      value = var.messaging_connection_string
+    },
+    connection_string02 = {
+      name  = "Search SOLR Core Application Connection String"
+      type  = "Custom"
+      value = var.solr_connection_string
+    },
+    connection_string03 = {
+      name  = "Collection Database Application User Name"
+      type  = "Custom"
+      value = var.collection_db_user_name
+    },
+    connection_string04 = {
+      name  = "Collection Database Application User Password"
+      type  = "Custom"
+      value = var.collection_db_user_password
+    }
+  }
+}
