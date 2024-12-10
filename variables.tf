@@ -1,12 +1,17 @@
 authCertificateNameTidy
 
-variable "server_farm_id" {
-  description = "ID of the App Service Plan."
+variable "auth_certificate_password" {
+  description = "Password for the authentication certificate."
   type        = string
 }
 
-variable "application_path" {
-  description = "Path of the application."
+variable "auth_certificate_blob" {
+  description = "PFX blob for the authentication certificate."
+  type        = string
+}
+
+variable "hosting_environment_profile" {
+  description = "Hosting environment profile based on ASE usage."
   type        = string
 }
 
