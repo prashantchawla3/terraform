@@ -1,7 +1,7 @@
 module "app_service" {
   source = "azurerm_app_service"
 
-  app_service_name               = "sc-app-prcHostingPlanNameTidy-dev-01"
+  app_service_name               = "sc-app-authCertificateNameTidy-dev-01"
   public_network_access_enabled  = false
   vnet_integration_required      = false
   ritm_number                    = "RITM12345"
@@ -29,8 +29,8 @@ module "app_service" {
     { name = "CURRENT_STACK", value = "dotnetcore" },
     { name = "WEBSITE_RUN_FROM_PACKAGE", value = "1" },
     { name = "WEBSITE_WEBDEPLOY_USE_SCM", value = "false" },
-    { name = "USE_ASE", value = var.use_ase ? "true" : "false" },
-    { name = "PRC_PROPERTIES", value = var.prc_properties }
+    { name = "AUTH_CERTIFICATE_PASSWORD", value = var.auth_certificate_password },
+    { name = "AUTH_CERTIFICATE_BLOB", value = var.auth_certificate_blob }
   ]
 
   connection_string = {
@@ -43,18 +43,13 @@ module "app_service" {
       name  = "POC02"
       type  = "Custom"
       value = "123#abc"
-    },
-    connection_string03 = {
-      name  = "Prc Hosting Plan Connection String"
-      type  = "Custom"
-      value = var.prc_hosting_plan_connection_string
     }
   }
 
   enable_backup = true
   backup_settings = {
     enabled                  = true
-    name                     = "sc-app-prcHostingPlanNameTidy-dev-01-backup"
+    name                     = "sc-app-poc-dev-03-backup"
     schedule = {
       frequency_interval       = 7
       frequency_unit           = "Day"
@@ -62,4 +57,6 @@ module "app_service" {
       keep_at_least_one_backup = false
     }
   }
+
+  hosting_environment_profile = var.hosting_environment_profile
 }
