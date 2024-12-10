@@ -1,7 +1,7 @@
 module "app_service" {
   source = "azurerm_app_service"
 
-  app_service_name               = "sc-app-cmHostingPlanNameTidy-dev-01"
+  app_service_name               = "sc-app-cdHostingPlanNameTidy-dev-01"
   public_network_access_enabled  = false
   vnet_integration_required      = false
   ritm_number                    = "RITM12345"
@@ -54,7 +54,7 @@ module "app_service" {
   enable_backup = true
   backup_settings = {
     enabled                  = true
-    name                     = "sc-app-cmHostingPlanNameTidy-dev-01-backup"
+    name                     = "sc-app-cdHostingPlanNameTidy-dev-01-backup"
     schedule = {
       frequency_interval       = 7
       frequency_unit           = "Day"
