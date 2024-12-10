@@ -1,17 +1,12 @@
-sc-app-prcHostingPlanNameTidy
+authCertificateNameTidy
 
-variable "use_ase" {
-  description = "Indicates if an App Service Environment (ASE) is used."
-  type        = bool
-}
-
-variable "prc_properties" {
-  description = "Prc hosting plan properties, dynamically set based on ASE usage."
+variable "server_farm_id" {
+  description = "ID of the App Service Plan."
   type        = string
 }
 
-variable "prc_hosting_plan_connection_string" {
-  description = "Connection string for Prc hosting plan configurations."
+variable "application_path" {
+  description = "Path of the application."
   type        = string
 }
 
