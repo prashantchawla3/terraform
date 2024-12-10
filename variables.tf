@@ -1,17 +1,17 @@
-sc-app-cdHostingPlanNameTidy
+sc-app-prcHostingPlanNameTidy
 
 variable "use_ase" {
   description = "Indicates if an App Service Environment (ASE) is used."
   type        = bool
 }
 
-variable "hosting_plan_properties" {
-  description = "Hosting plan properties, dynamically set based on ASE usage."
+variable "prc_properties" {
+  description = "Prc hosting plan properties, dynamically set based on ASE usage."
   type        = string
 }
 
-variable "hosting_plan_connection_string" {
-  description = "Connection string for hosting plan configurations."
+variable "prc_hosting_plan_connection_string" {
+  description = "Connection string for Prc hosting plan configurations."
   type        = string
 }
 
