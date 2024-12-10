@@ -1,3 +1,5 @@
+sc-app-cdHostingPlanNameTidy
+
 variable "use_ase" {
   description = "Indicates if an App Service Environment (ASE) is used."
   type        = bool
